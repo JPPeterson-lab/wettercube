@@ -4,7 +4,7 @@
 #include "screens.h"
 #include "colors.h"
 #include "images.h"
-#include "fonts/fonts.h"
+#include "fonts.h"
 #include "actions.h"
 #include "vars.h"
 #include "styles.h"

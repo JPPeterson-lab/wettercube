@@ -4,6 +4,14 @@ Alle relevanten Änderungen je Version. Neueste Version zuerst.
 
 ---
 
+## [1.8.2] – 2026-09-11
+
+### Behoben
+- **Luftqualitäts-Werte immer grün** – `DynamicJsonDocument` für den Pollen-/Luftqualitäts-Request war seit dem Hinzufügen von Ozon/PM10/PM2.5/EU-AQI zu klein, `deserializeJson` schlug lautlos fehl und alle Werte blieben 0 (fällt bei jeder Schwelle in den grünen Bereich). Alle JSON-Parsing-Stellen im Projekt nutzen jetzt ArduinoJson v7s elastisches `JsonDocument` statt einer fest geschätzten Kapazität; zusätzlich Fehler-Log bei fehlgeschlagenem Parsing ergänzt
+- **Kaputter Include-Pfad** – `screens.c`/`styles.c` verwiesen durch einen späten PicoPixel-Reexport wieder auf `fonts/fonts.h` statt `fonts.h`, wodurch der Quellcode für niemanden außer dem bereits gebauten Release-Binary kompilierbar war
+
+---
+
 ## [1.8.1] – 2026-08-15
 
 ### Neu

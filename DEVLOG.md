@@ -381,4 +381,35 @@ Die offiziellen EU-Luftqualitätsindex-Grenzwerte (EEA, 2024er Revision) haben 6
 - Neue Checkbox „Screen 6 – Luftqualität" unter „Screens aktivieren", gleiches Muster wie die bestehenden Screen-Toggles (Preference-Key `scrLuft`)
 - Navigationsreihenfolge erweitert: 1 → 4 → 2 → 3 → 5 → 6
 
-*Zuletzt aktualisiert: August 2026*
+---
+
+## v1.8.2 – Bugfix: Luftqualitätswerte immer grün
+
+### Ursache
+- `DynamicJsonDocument doc(8192)` im Pollen-/Luftqualitäts-Request war zu klein, nachdem
+  vier weitere Stunden-Arrays (pm10, pm2_5, ozone, european_aqi) zu den fünf Pollen-Arrays
+  hinzukamen
+- `deserializeJson()` schlug lautlos fehl (Rückgabewert wurde nicht geprüft), alle
+  gelesenen Werte blieben 0 – und 0 liegt bei jeder Farbschwelle im grünen Bereich
+- Bekanntes Fallstrick-Muster in diesem Projekt (siehe Lessons Learned), diesmal durch die
+  neue Luftqualitäts-Erweiterung erneut ausgelöst
+
+### Fix
+- Alle vier `DynamicJsonDocument`-Stellen (Geocoding, Wetter, Pollen/Luft, OTA-Check) auf
+  ArduinoJson v7s elastisches `JsonDocument` umgestellt – wächst automatisch mit der
+  tatsächlichen Antwortgröße, kein Kapazitäts-Raten mehr nötig
+- Für den Pollen-/Luft-Request zusätzlich den `DeserializationError`-Rückgabewert geprüft
+  und bei Fehler ins Serial-Log geschrieben, damit ein künftiges Problem sichtbar wird
+  statt sich als "alles zeigt 0/grün an" zu tarnen
+
+### Zweiter Fund: kaputter Include-Pfad
+- Ein später PicoPixel-Reexport hatte `screens.c`/`styles.c` erneut auf
+  `#include "fonts/fonts.h"` zurückgesetzt (die alte, nicht-flache Verzeichnisstruktur),
+  statt der im Projekt verwendeten flachen `fonts.h`
+- Das bereits veröffentlichte v1.8.1-Release-Binary war davon nicht betroffen (vor dem
+  fehlerhaften Reexport gebaut), aber der Quellcode im Repository war für niemand sonst
+  kompilierbar
+- Vor jedem Release künftig: nach dem letzten Datei-Edit nochmal frisch kompilieren,
+  nicht auf einen früheren erfolgreichen Compile-Lauf im selben Turn verlassen
+
+*Zuletzt aktualisiert: September 2026*

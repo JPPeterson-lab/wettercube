@@ -15,7 +15,7 @@
 #include "images.h"
 #include "colors.h"
 
-#define FIRMWARE_VERSION     "1.8.1"
+#define FIRMWARE_VERSION     "1.8.2"
 #define OTA_VERSION_URL      "https://jppeterson-lab.github.io/WetterCube/version.json"
 #define OTA_FIRMWARE_URL     "https://jppeterson-lab.github.io/WetterCube/firmware/firmware.bin"
 
@@ -472,7 +472,7 @@ bool geocodeLocation(const String& city) {
 
     if (httpCode == 200) {
         String payload = http.getString();
-        DynamicJsonDocument doc(1024);
+        JsonDocument doc;
         deserializeJson(doc, payload);
 
         if (doc["results"].size() > 0) {
@@ -539,7 +539,7 @@ void fetchWeather() {
 
     if (httpCode == 200) {
         String payload = http.getString();
-        DynamicJsonDocument doc(8192);
+        JsonDocument doc;
         deserializeJson(doc, payload);
 
         JsonObject current = doc["current"];
@@ -684,8 +684,13 @@ void fetchPollen() {
 
     if (httpCode == 200) {
         String payload = http.getString();
-        DynamicJsonDocument doc(8192);
-        deserializeJson(doc, payload);
+        JsonDocument doc;
+        DeserializationError jsonErr = deserializeJson(doc, payload);
+        if (jsonErr) {
+            Serial.printf("Pollen/Luft JSON-Fehler: %s\n", jsonErr.c_str());
+            http.end();
+            return;
+        }
 
         struct tm timeinfo;
         if (!getLocalTime(&timeinfo)) { http.end(); return; }
@@ -1158,7 +1163,7 @@ void handleOTACheck() {
         server.send(502, "application/json", "{\"error\":\"fetch failed\"}");
         return;
     }
-    DynamicJsonDocument doc(256);
+    JsonDocument doc;
     deserializeJson(doc, http.getString());
     http.end();
     String available = doc["version"] | FIRMWARE_VERSION;
